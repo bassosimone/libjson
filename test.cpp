@@ -137,16 +137,16 @@ TEST_CASE("We can parse and process a JSON") {
     REQUIRE(s == "macos");
   }
   {
-    size_t size = 0;
-    REQUIRE(doc.get_array_size("/inputs", &size));
-    REQUIRE(size == 2);
+    ArrayKeys ak;
+    REQUIRE(doc.get_array_keys("/inputs", &ak));
+    REQUIRE(ak.size() == 2);
     std::vector<std::string> inputs;
-    for (size_t i = 0; i < size; ++i) {
+    for (auto key : ak) {
       std::string s;
-      REQUIRE(doc.get_string(doc.make_array_path("/inputs", i), &s));
+      REQUIRE(doc.get_string(key, &s));
       inputs.push_back(std::move(s));
     }
-    REQUIRE(inputs.size() == size);
+    REQUIRE(inputs.size() == ak.size());
     REQUIRE(inputs[0] == "www.kernel.org");
     REQUIRE(inputs[1] == "www.x.org");
   }

@@ -15,13 +15,8 @@ namespace libjson {
 
 using Exception = nlohmann::json::exception;
 
-class Json::Impl {
- public:
-  nlohmann::json json;
-};
-
 // Misc
-// ----
+// ====
 
 static std::string possibly_encode(std::string value) noexcept {
   uint32_t codepoint = 0;
@@ -38,6 +33,71 @@ static std::string possibly_encode(std::string value) noexcept {
   }
   return value;
 }
+
+static std::string make_array_path(std::string path, size_t size) noexcept {
+  std::stringstream stream;
+  stream << path;
+  if (path.size() > 0 && path[path.size() - 1] != '/') {
+    stream << "/";
+  }
+  stream << size;
+  return stream.str();
+}
+
+// ArrayKeys
+// =========
+
+ArrayKeys::Iter::Iter(const ArrayKeys &ak, size_t pos) noexcept : ak_{ak} {
+  pos_ = pos;
+}
+
+std::string ArrayKeys::Iter::operator*() const noexcept {
+  return make_array_path(ak_.path_, pos_);
+}
+
+ArrayKeys::Iter &ArrayKeys::Iter::operator++() noexcept {
+  pos_ += 1;
+  return *this;
+}
+
+ArrayKeys::Iter &ArrayKeys::Iter::operator++(int /*dummy*/) noexcept {
+  pos_ += 1;
+  return *this;
+}
+
+bool ArrayKeys::Iter::operator==(const Iter &other) const noexcept {
+  // TODO(bassosimone): also check for equality of ak_?
+  return pos_ == other.pos_;
+}
+
+bool ArrayKeys::Iter::operator!=(const Iter &other) const noexcept {
+  return !(*this == other);
+}
+
+ArrayKeys::ArrayKeys() noexcept {}
+
+ArrayKeys::ArrayKeys(std::string path, size_t size) noexcept {
+  std::swap(path, path_);
+  size_ = size;
+}
+
+ArrayKeys::Iter ArrayKeys::begin() const noexcept {
+  return ArrayKeys::Iter{*this, 0};
+}
+
+ArrayKeys::Iter ArrayKeys::end() const noexcept {
+  return ArrayKeys::Iter{*this, size_};
+}
+
+size_t ArrayKeys::size() const noexcept { return size_; }
+
+// Json
+// ====
+
+class Json::Impl {
+ public:
+  nlohmann::json json;
+};
 
 // Scalar operations
 // -----------------
@@ -98,8 +158,8 @@ bool Json::get_string(std::string path, std::string *value) const noexcept {
 // Array operations
 // ----------------
 
-bool Json::get_array_size(std::string path, size_t *size) const noexcept {
-  if (!size) {
+bool Json::get_array_keys(std::string path, ArrayKeys *ak) const noexcept {
+  if (!ak) {
     return false;
   }
   try {
@@ -108,22 +168,11 @@ bool Json::get_array_size(std::string path, size_t *size) const noexcept {
     if (!maybe_array.is_array()) {
       return false;
     }
-    *size = maybe_array.size();
+    *ak = ArrayKeys{path, maybe_array.size()};
   } catch (const Exception &) {
     return false;
   }
   return true;
-}
-
-/*static*/ std::string  //
-Json::make_array_path(std::string path, size_t size) noexcept {
-  std::stringstream stream;
-  stream << path;
-  if (path.size() > 0 && path[path.size() - 1] != '/') {
-    stream << "/";
-  }
-  stream << size;
-  return stream.str();
 }
 
 // TODO(bassosimone): write more tests for this macro.
