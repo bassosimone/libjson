@@ -1,0 +1,16 @@
+rule cxx
+  command = g++ -g -fsanitize=address -Wall -Wextra -pedantic -std=c++11 -O2 -c $in -o $out
+rule link
+  command = g++ -g -fsanitize=address -o $out $in
+rule ar
+  command = ar cr $out $in
+rule run
+  command = ./$in 2>&1 | tee $in.log
+
+build base64_encode.o: cxx base64_encode.cpp
+build utf8_decode.o: cxx utf8_decode.cpp
+build libjson.o: cxx libjson.cpp
+build libjson.a: ar base64_encode.o utf8_decode.o libjson.o
+build test.o: cxx test.cpp
+build test: link libjson.a test.o
+build test.log: run test
