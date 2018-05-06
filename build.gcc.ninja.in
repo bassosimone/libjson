@@ -1,7 +1,7 @@
 rule cxx
-  command = g++ -Wall -Wextra -pedantic -std=c++11 -O2 -c $in -o $out
+  command = g++ -Wall -Wextra -pedantic -std=c++11 -O2 @cxxflags@ -c $in -o $out
 rule link
-  command = g++ -o $out $in
+  command = g++ @ldflags@ -o $out $in
 rule ar
   command = ar cr $out $in
 rule run

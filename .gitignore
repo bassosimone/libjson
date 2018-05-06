@@ -1,6 +1,7 @@
 /.ninja_deps
 /.ninja_log
 /base64_encode.o
+/build.ninja
 /libjson.a
 /libjson.o
 /test
