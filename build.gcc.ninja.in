@@ -12,5 +12,5 @@ build utf8_decode.o: cxx utf8_decode.cpp
 build libjson.o: cxx libjson.cpp
 build libjson.a: ar base64_encode.o utf8_decode.o libjson.o
 build test.o: cxx test.cpp
-build test: link libjson.a test.o
+build test: link test.o libjson.a
 build test.log: run test

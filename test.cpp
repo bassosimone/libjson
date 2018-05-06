@@ -54,21 +54,21 @@ SETTER_CHECK("We can set a nested string", string, "/x/value", "foo")
   }
 
 EMPTY_GETTER_CHECK("We cannot get a nonexistent toplevel boolean", boolean,
-                   "/value", bool);
+                   "/value", bool)
 EMPTY_GETTER_CHECK("We cannot get a nonexistent nested boolean", boolean,
-                   "/x/value", bool);
+                   "/x/value", bool)
 EMPTY_GETTER_CHECK("We cannot get a nonexistent toplevel float", float,
-                   "/value", double);
+                   "/value", double)
 EMPTY_GETTER_CHECK("We cannot get a nonexistent nested float", float,
-                   "/x/value", double);
+                   "/x/value", double)
 EMPTY_GETTER_CHECK("We cannot get a nonexistent toplevel integer", integer,
-                   "/value", int64_t);
+                   "/value", int64_t)
 EMPTY_GETTER_CHECK("We cannot get a nonexistent nested integer", integer,
-                   "/x/value", int64_t);
+                   "/x/value", int64_t)
 EMPTY_GETTER_CHECK("We cannot get a nonexistent toplevel string", string,
-                   "/value", std::string);
+                   "/value", std::string)
 EMPTY_GETTER_CHECK("We cannot get a nonexistent nested string", string,
-                   "/x/value", std::string);
+                   "/x/value", std::string)
 
 // Scalar setter-getter
 // --------------------
@@ -85,21 +85,21 @@ EMPTY_GETTER_CHECK("We cannot get a nonexistent nested string", string,
   }
 
 SETTER_GETTER_CHECK("We can set and then get a toplevel boolean", boolean,
-                    "/value", bool, true);
+                    "/value", bool, true)
 SETTER_GETTER_CHECK("We can set and then get a nested boolean", boolean,
-                    "/x/value", bool, true);
+                    "/x/value", bool, true)
 SETTER_GETTER_CHECK("We can set and then get a toplevel float", float,
-                    "/value", double, 17.0);
+                    "/value", double, 17.0)
 SETTER_GETTER_CHECK("We can set and then get a nested float", float,
-                    "/x/value", double, 17.0);
+                    "/x/value", double, 17.0)
 SETTER_GETTER_CHECK("We can set and then get a toplevel integer", integer,
-                    "/value", int64_t, 11);
+                    "/value", int64_t, 11)
 SETTER_GETTER_CHECK("We can set and then get a nested integer", integer,
-                    "/x/value", int64_t, 11);
+                    "/x/value", int64_t, 11)
 SETTER_GETTER_CHECK("We can set and then get a toplevel string", string,
-                    "/value", std::string, "antani");
+                    "/value", std::string, "antani")
 SETTER_GETTER_CHECK("We can set and then get a nested string", string,
-                    "/x/value", std::string, "antani");
+                    "/x/value", std::string, "antani")
 
 // Parse
 // -----
