@@ -181,9 +181,21 @@ TEST_CASE("We can construct and serialize a JSON") {
   REQUIRE(doc.set_string("/name", "Ndt"));
   REQUIRE(doc.set_integer("/version_major", 17));
   REQUIRE(doc.set_float("/elapsed", 1.14));
-  std::string s;
-  REQUIRE(doc.serialize(&s));
-  std::clog << s << std::endl;
+  {
+    nlohmann::json control;
+    {
+      std::string s;
+      REQUIRE(doc.serialize(&s));
+      control = nlohmann::json::parse(s);
+    }
+    REQUIRE(control["annotations"]["engine_name"] == "libmeasurement_kit");
+    REQUIRE(control["annotations"]["platform"] == "macos");
+    REQUIRE(control["inputs"][0] == "www.kernel.org");
+    REQUIRE(control["inputs"][1] == "www.x.org");
+    REQUIRE(control["name"] == "Ndt");
+    REQUIRE(control["version_major"] == 17);
+    REQUIRE(control["elapsed"] == 1.14);
+  }
 }
 
 // Non-UTF8-input
