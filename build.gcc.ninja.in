@@ -1,7 +1,9 @@
+cxxflags = -Wall -Wextra -pedantic -std=c++11 -O2 @cxxflags@
+
 rule cxx
-  command = g++ -Wall -Wextra -pedantic -std=c++11 -O2 @cxxflags@ -c $in -o $out
+  command = @cxx@ $cxxflags -c $in -o $out
 rule link
-  command = g++ @ldflags@ -o $out $in
+  command = @cxx@ -o $out $in @ldflags@
 rule ar
   command = ar cr $out $in
 rule run
