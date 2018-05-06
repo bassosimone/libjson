@@ -42,8 +42,9 @@ matrix:
       sudo: required
 
     - os: linux
-      env: BUILD_TYPE="vanilla"
+      env: BUILD_TYPE="clang"
            CXXFLAGS="-stdlib=libc++"
+           LDFLAGS="-stdlib=libc++"
            MK_CXX=clang++
       script:
         - ./.ci/docker/script/docker-run bassosimone/mk-debian:testing ninja
