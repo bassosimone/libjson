@@ -9,7 +9,7 @@
 #include <memory>
 
 #define MK_LIBJSON_MAJOR 0
-#define MK_LIBJSON_MINOR 1
+#define MK_LIBJSON_MINOR 2
 #define MK_LIBJSON_PATCH 0
 
 namespace mk {
@@ -39,7 +39,17 @@ class Json {
   // Array operations
   // ----------------
 
-  bool get_size(std::string path, size_t *value) const noexcept;
+  bool get_array_size(std::string path, size_t *value) const noexcept;
+
+  static std::string make_array_path(std::string path, size_t size) noexcept;
+
+  bool push_boolean(std::string path, bool value) noexcept;
+
+  bool push_float(std::string path, double value) noexcept;
+
+  bool push_integer(std::string path, int64_t value) noexcept;
+
+  bool push_string(std::string path, std::string value) noexcept;
 
   // Serialize/parse
   // ---------------

@@ -138,18 +138,17 @@ TEST_CASE("We can parse and process a JSON") {
   }
   {
     size_t size = 0;
-    REQUIRE(doc.get_size("/inputs", &size));
+    REQUIRE(doc.get_array_size("/inputs", &size));
     REQUIRE(size == 2);
-    {
+    std::vector<std::string> inputs;
+    for (size_t i = 0; i < size; ++i) {
       std::string s;
-      REQUIRE(doc.get_string("/inputs/0", &s));
-      REQUIRE(s == "www.kernel.org");
+      REQUIRE(doc.get_string(doc.make_array_path("/inputs", i), &s));
+      inputs.push_back(std::move(s));
     }
-    {
-      std::string s;
-      REQUIRE(doc.get_string("/inputs/1", &s));
-      REQUIRE(s == "www.x.org");
-    }
+    REQUIRE(inputs.size() == size);
+    REQUIRE(inputs[0] == "www.kernel.org");
+    REQUIRE(inputs[1] == "www.x.org");
   }
   {
     std::string s;
@@ -177,8 +176,8 @@ TEST_CASE("We can construct and serialize a JSON") {
   Json doc;
   REQUIRE(doc.set_string("/annotations/engine_name", "libmeasurement_kit"));
   REQUIRE(doc.set_string("/annotations/platform", "macos"));
-  REQUIRE(doc.set_string("/inputs/0", "www.kernel.org"));
-  REQUIRE(doc.set_string("/inputs/1", "www.x.org"));
+  REQUIRE(doc.push_string("/inputs", "www.kernel.org"));
+  REQUIRE(doc.push_string("/inputs", "www.x.org"));
   REQUIRE(doc.set_string("/name", "Ndt"));
   REQUIRE(doc.set_integer("/version_major", 17));
   REQUIRE(doc.set_float("/elapsed", 1.14));

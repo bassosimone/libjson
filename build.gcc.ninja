@@ -1,7 +1,7 @@
 rule cxx
-  command = g++ -g -fsanitize=address -Wall -Wextra -pedantic -std=c++11 -O2 -c $in -o $out
+  command = g++ -Wall -Wextra -pedantic -std=c++11 -O2 -c $in -o $out
 rule link
-  command = g++ -g -fsanitize=address -o $out $in
+  command = g++ -o $out $in
 rule ar
   command = ar cr $out $in
 rule run

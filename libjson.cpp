@@ -4,6 +4,8 @@
 
 #include "libjson.hpp"
 
+#include <sstream>
+
 #include "base64_encode.hpp"
 #include "nlohmann_json.hpp"
 #include "utf8_decode.hpp"
@@ -18,10 +20,29 @@ class Json::Impl {
   nlohmann::json json;
 };
 
+// Misc
+// ----
+
+static std::string possibly_encode(std::string value) noexcept {
+  uint32_t codepoint = 0;
+  uint32_t state = UTF8_ACCEPT;
+  for (char ch : value) {
+    (void)utf8_decode(&state, &codepoint, (uint8_t)ch);
+    if (state == UTF8_REJECT) {
+      break;
+    }
+  }
+  if (state != UTF8_ACCEPT) {
+    std::string s = base64_encode((uint8_t *)value.c_str(), value.size());
+    std::swap(s, value);
+  }
+  return value;
+}
+
 // Scalar operations
 // -----------------
 
-#define SET_IMPL_(path, value)                             \
+#define SCALAR_SET_IMPL_(path, value)                      \
   try {                                                    \
     nlohmann::json::json_pointer pointer{std::move(path)}; \
     impl_->json[std::move(pointer)] = value;               \
@@ -31,36 +52,22 @@ class Json::Impl {
   return true
 
 bool Json::set_boolean(std::string path, bool value) noexcept {
-  SET_IMPL_(path, value);
+  SCALAR_SET_IMPL_(path, value);
 }
 
 bool Json::set_float(std::string path, double value) noexcept {
-  SET_IMPL_(path, value);
+  SCALAR_SET_IMPL_(path, value);
 }
 
 bool Json::set_integer(std::string path, int64_t value) noexcept {
-  SET_IMPL_(path, value);
+  SCALAR_SET_IMPL_(path, value);
 }
 
 bool Json::set_string(std::string path, std::string value) noexcept {
-  {
-    uint32_t codepoint = 0;
-    uint32_t state = UTF8_ACCEPT;
-    for (char ch : value) {
-      (void)utf8_decode(&state, &codepoint, (uint8_t)ch);
-      if (state == UTF8_REJECT) {
-        break;
-      }
-    }
-    if (state != UTF8_ACCEPT) {
-      std::string s = base64_encode((uint8_t *)value.c_str(), value.size());
-      std::swap(s, value);
-    }
-  }
-  SET_IMPL_(path, value);
+  SCALAR_SET_IMPL_(path, possibly_encode(std::move(value)));
 }
 
-#define GET_IMPL_(path, value)                             \
+#define SCALAR_GET_IMPL_(path, value)                      \
   if (!value) {                                            \
     return false;                                          \
   }                                                        \
@@ -73,35 +80,76 @@ bool Json::set_string(std::string path, std::string value) noexcept {
   return true
 
 bool Json::get_boolean(std::string path, bool *value) const noexcept {
-  GET_IMPL_(path, value);
+  SCALAR_GET_IMPL_(path, value);
 }
 
 bool Json::get_float(std::string path, double *value) const noexcept {
-  GET_IMPL_(path, value);
+  SCALAR_GET_IMPL_(path, value);
 }
 
 bool Json::get_integer(std::string path, int64_t *value) const noexcept {
-  GET_IMPL_(path, value);
+  SCALAR_GET_IMPL_(path, value);
 }
 
 bool Json::get_string(std::string path, std::string *value) const noexcept {
-  GET_IMPL_(path, value);
+  SCALAR_GET_IMPL_(path, value);
 }
 
 // Array operations
 // ----------------
 
-bool Json::get_size(std::string path, size_t *size) const noexcept {
+bool Json::get_array_size(std::string path, size_t *size) const noexcept {
   if (!size) {
     return false;
   }
   try {
     nlohmann::json::json_pointer pointer{std::move(path)};
-    *size = impl_->json.at(std::move(pointer)).size();
+    auto &maybe_array = impl_->json.at(std::move(pointer));
+    if (!maybe_array.is_array()) {
+      return false;
+    }
+    *size = maybe_array.size();
   } catch (const Exception &) {
     return false;
   }
   return true;
+}
+
+/*static*/ std::string  //
+Json::make_array_path(std::string path, size_t size) noexcept {
+  std::stringstream stream;
+  stream << path;
+  if (path.size() > 0 && path[path.size() - 1] != '/') {
+    stream << "/";
+  }
+  stream << size;
+  return stream.str();
+}
+
+// TODO(bassosimone): write more tests for this macro.
+#define ARRAY_PUSH_IMPL_(type, path, value)                \
+  try {                                                    \
+    nlohmann::json::json_pointer pointer{std::move(path)}; \
+    impl_->json[std::move(pointer)].push_back(value);      \
+  } catch (const Exception &) {                            \
+    return false;                                          \
+  }                                                        \
+  return true
+
+bool Json::push_boolean(std::string path, bool value) noexcept {
+  ARRAY_PUSH_IMPL_(boolean, path, value);
+}
+
+bool Json::push_float(std::string path, double value) noexcept {
+  ARRAY_PUSH_IMPL_(float, path, value);
+}
+
+bool Json::push_integer(std::string path, int64_t value) noexcept {
+  ARRAY_PUSH_IMPL_(integer, path, value);
+}
+
+bool Json::push_string(std::string path, std::string value) noexcept {
+  ARRAY_PUSH_IMPL_(string, path, possibly_encode(std::move(value)));
 }
 
 // Serialize/parse
