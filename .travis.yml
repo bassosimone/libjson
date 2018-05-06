@@ -1,0 +1,62 @@
+language: c++
+
+matrix:
+  include:
+
+    - os: linux
+      env: BUILD_TYPE="vanilla"
+      script:
+        - ./.ci/docker/script/docker-run bassosimone/mk-debian:testing ninja
+      services:
+        - docker
+      sudo: required
+
+    - os: linux
+      env: BUILD_TYPE="asan"
+           CXXFLAGS="-fsanitize=address"
+           LDFLAGS="-fsanitize=address"
+      script:
+        - ./.ci/docker/script/docker-run bassosimone/mk-debian:testing ninja
+      services:
+        - docker
+      sudo: required
+
+    - os: linux
+      env: BUILD_TYPE="lsan"
+           CXXFLAGS="-fsanitize=leak"
+           LDFLAGS="-fsanitize=leak"
+      script:
+        - ./.ci/docker/script/docker-run bassosimone/mk-debian:testing ninja
+      services:
+        - docker
+      sudo: required
+
+    - os: linux
+      env: BUILD_TYPE="ubsan"
+           CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+           LDFLAGS="-fsanitize=undefined"
+      script:
+        - ./.ci/docker/script/docker-run bassosimone/mk-debian:testing ninja
+      services:
+        - docker
+      sudo: required
+
+    - os: linux
+      env: BUILD_TYPE="vanilla"
+           CXXFLAGS="-stdlib=libc++"
+           MK_CXX=clang++
+      script:
+        - ./.ci/docker/script/docker-run bassosimone/mk-debian:testing ninja
+      services:
+        - docker
+      sudo: required
+
+    - os: linux
+      env: BUILD_TYPE="coverage"
+           CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+           LDFLAGS="-lgcov"
+      script:
+        - ./.ci/docker/script/docker-run bassosimone/mk-debian:testing ninja
+      services:
+        - docker
+      sudo: required
